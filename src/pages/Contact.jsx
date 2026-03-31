@@ -228,7 +228,7 @@ export default function Contact() {
                     type="text"
                     value={form.name}
                     onChange={handleChange}
-                    placeholder="Uday Patel"
+                    placeholder="Uday Thanki"
                     className={`input ${errors.name ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                     aria-describedby={errors.name ? 'name-error' : undefined}
                   />
