@@ -34,14 +34,16 @@ export default function BrandLogo({
   const src = brandLogoSrc()
 
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+    <span className={`inline-flex shrink-0 items-center gap-2.5 ${className}`}>
       <img
         src={src}
         width={px}
         height={px}
         alt="NavMe"
         decoding="async"
-        className={`rounded-full object-cover shrink-0 ring-1 ring-white/15 dark:ring-white/10 bg-surface-card ${imgClassName}`}
+        loading="eager"
+        className={`max-w-none shrink-0 rounded-full object-cover ring-1 ring-white/15 dark:ring-white/10 bg-surface-card ${imgClassName}`}
+        style={{ width: px, height: px }}
         draggable={false}
       />
       {showWordmark && (

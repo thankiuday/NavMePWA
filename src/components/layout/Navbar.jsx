@@ -50,12 +50,11 @@ export default function Navbar() {
         {/* ── Logo ─────────────────────────────────────────────────── */}
         <Link
           to="/"
-          className="group flex items-center min-w-0"
+          className="group flex shrink-0 items-center"
           aria-label="NavMe home"
         >
           <BrandLogo
             size="md"
-            className="min-w-0"
             imgClassName="transition-all duration-300 group-hover:shadow-[0_0_22px_rgba(99,102,241,0.4)] group-hover:scale-[1.03]"
           />
         </Link>
