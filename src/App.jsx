@@ -6,6 +6,7 @@ import { ToastProvider } from './context/ToastContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import BottomNav from './components/layout/BottomNav'
+import ScrollToTop from './components/layout/ScrollToTop'
 import ToastContainer from './components/ui/Toast'
 import OnboardingModal from './components/ui/OnboardingModal'
 import InstallAppPrompt from './components/ui/InstallAppPrompt'
@@ -87,6 +88,7 @@ export default function App() {
     <ThemeProvider>
       <ToastProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <div className="flex flex-col min-h-screen bg-surface-dark text-gray-100">
             <Navbar />
 
