@@ -1,0 +1,15 @@
+# Render Blueprint — Static Site (Vite + React SPA)
+# Docs: https://render.com/docs/infrastructure-as-code
+#
+# Deploy: Dashboard → New → Blueprint → connect https://github.com/thankiuday/NavMePWA
+# After first deploy, add SPA rewrite (see DEPLOYMENT.md).
+
+services:
+  - type: web
+    name: navme-pwa
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
