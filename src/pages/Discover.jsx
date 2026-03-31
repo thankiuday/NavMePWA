@@ -204,18 +204,48 @@ export default function Discover() {
   const [sortBy, setSortBy]             = useState('distance')
   const hasMounted = useRef(false)
 
-  // On mount: immediately show location modal if not yet granted
+  // On mount: if permission already granted, request GPS immediately; else show modal after brief delay.
   useEffect(() => {
     if (hasMounted.current) return
     hasMounted.current = true
 
-    // If already granted (e.g. user revisits), skip modal and request directly
-    if (!granted) {
-      // Very short delay so the page animation settles first
-      const t = setTimeout(() => setShowModal(true), 350)
-      return () => clearTimeout(t)
+    let timeoutId
+    let cancelled = false
+
+    const openModalSoon = () => {
+      timeoutId = window.setTimeout(() => {
+        if (!cancelled) setShowModal(true)
+      }, 350)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+    ;(async () => {
+      if (!navigator.geolocation) return
+
+      try {
+        if (navigator.permissions?.query) {
+          const status = await navigator.permissions.query({ name: 'geolocation' })
+          if (cancelled) return
+          if (status.state === 'granted') {
+            requestLocation()
+            return
+          }
+          if (status.state === 'denied') {
+            setDismissed(true)
+            return
+          }
+        }
+      } catch {
+        /* Safari / older browsers may not support permissions API */
+      }
+
+      if (!cancelled) openModalSoon()
+    })()
+
+    return () => {
+      cancelled = true
+      if (timeoutId) window.clearTimeout(timeoutId)
+    }
+  }, [requestLocation])
 
   // Toast feedback when location is granted
   useEffect(() => {

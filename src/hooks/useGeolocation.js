@@ -26,6 +26,18 @@ export function useGeolocation() {
       return
     }
 
+    // Live GPS requires a secure context (HTTPS or localhost). Render / production URLs are HTTPS.
+    if (typeof window !== 'undefined' && !window.isSecureContext) {
+      setState(prev => ({
+        ...prev,
+        error:
+          'Location needs a secure connection (HTTPS). Open this app using https:// or contact the site owner.',
+        denied: true,
+        loading: false,
+      }))
+      return
+    }
+
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     navigator.geolocation.getCurrentPosition(

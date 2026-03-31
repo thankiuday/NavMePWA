@@ -81,7 +81,8 @@ Save. See [Render: client-side routing](https://docs.render.com/deploy-create-re
 ## 4. After deploy
 
 - Visit the `.onrender.com` URL and test **Home**, **Discover**, **direct URL refresh** on a nested route.
-- **Install / PWA:** served from HTTPS on Render; service worker should register after deploy.
+- **PWA install:** Render serves **HTTPS**, which is required for both **install** and **live geolocation**. After deploy, open the site in Chrome/Edge (Android or desktop): a built-in **Install** prompt or the banner’s **Install** button may appear once the browser’s installability checks pass (manifest + service worker + icons). **Safari (iOS):** use **Share → Add to Home Screen** (the in-app banner explains this). Installed mode uses `display: standalone` from the Web Manifest.
+- **Geolocation:** `Discover` requests GPS through the browser’s **permission prompt** (or uses an existing **Allow** if the user already granted it). This only works on **https://** (or `localhost` in development)—not on plain `http://`.
 - **Supabase later:** add `VITE_*` vars in Render **Environment** and reference them in code; never commit secrets.
 
 ---

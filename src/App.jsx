@@ -8,6 +8,7 @@ import Footer from './components/layout/Footer'
 import BottomNav from './components/layout/BottomNav'
 import ToastContainer from './components/ui/Toast'
 import OnboardingModal from './components/ui/OnboardingModal'
+import InstallAppPrompt from './components/ui/InstallAppPrompt'
 import { useOnboarding } from './hooks/useOnboarding'
 
 // Lazy-loaded pages
@@ -103,6 +104,7 @@ export default function App() {
             <BottomNav />
           </div>
           <ToastContainer />
+          <InstallAppPrompt />
           {/* Onboarding tour — renders for first 5 app visits */}
           <OnboardingGate />
         </BrowserRouter>

@@ -12,15 +12,26 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['logo.png', 'icons/*.png', 'icons/*.svg', 'offline.html'],
       manifest: {
+        id: '/',
         name: 'NavMe — AR Navigation',
         short_name: 'NavMe',
         description: 'Discover AR experiences near you with smart location-based navigation.',
         theme_color: '#6366f1',
         background_color: '#0f0f13',
         display: 'standalone',
+        display_override: ['standalone', 'browser'],
         orientation: 'portrait-primary',
         scope: '/',
         start_url: '/',
+        shortcuts: [
+          {
+            name: 'Discover AR near you',
+            short_name: 'Discover',
+            description: 'Open live location-based AR discovery',
+            url: '/discover',
+            icons: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+          },
+        ],
         icons: [
           {
             src: 'logo.png',
