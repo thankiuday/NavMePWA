@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { CATEGORY_CONFIG } from '../../data/mockARData'
+import { CATEGORY_CONFIG } from '../../constants/categories'
 
 const DIRECTION_COLORS = {
   N: 'text-blue-400', NE: 'text-cyan-400', E: 'text-emerald-400',
