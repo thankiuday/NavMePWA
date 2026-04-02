@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AR_EXPERIENCES, CATEGORIES, CATEGORY_CONFIG } from '../data/mockARData'
+import { CATEGORIES, CATEGORY_CONFIG } from '../constants/categories'
+import { fetchARExperiences } from '../services/supabase'
 import { filterByRadius } from '../utils/haversine'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useToast } from '../hooks/useToast'
@@ -64,45 +65,22 @@ function EmptyState({ search, category, radius, onResetRadius, hasLocation }) {
 /** Pulsing GPS animation shown while location is loading */
 function GPSLoadingState() {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="col-span-full flex flex-col items-center justify-center py-20 gap-6"
-    >
-      {/* Animated radar rings */}
-      <div className="relative flex items-center justify-center w-24 h-24">
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full border border-brand-500/40"
-            animate={{ scale: [1, 2.2], opacity: [0.6, 0] }}
-            transition={{
-              repeat: Infinity,
-              duration: 2,
-              delay: i * 0.6,
-              ease: 'easeOut',
-            }}
-            style={{ width: 40, height: 40 }}
-          />
-        ))}
-        <div className="w-10 h-10 rounded-full bg-brand-500/20 border border-brand-500/50 flex items-center justify-center z-10">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-400">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
+    <>
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="card p-4 space-y-4 animate-pulse border-surface-border/50">
+          <div className="aspect-video bg-surface-border/40 rounded-xl" />
+          <div className="space-y-2.5">
+            <div className="h-4 bg-surface-border/40 rounded w-3/4" />
+            <div className="h-3 bg-surface-border/30 rounded w-full" />
+            <div className="h-3 bg-surface-border/30 rounded w-5/6" />
+          </div>
+          <div className="flex justify-between pt-3 border-t border-surface-border/30">
+            <div className="h-3.5 bg-surface-border/40 rounded w-1/4" />
+            <div className="h-3.5 bg-surface-border/40 rounded w-1/4" />
+          </div>
         </div>
-      </div>
-
-      <div className="text-center">
-        <p className="text-base font-semibold text-gray-200 mb-1">Detecting your location…</p>
-        <p className="text-sm text-gray-500">Getting your GPS coordinates for precise results</p>
-      </div>
-
-      {/* Skeleton preview underneath */}
-      <div className="w-full max-w-3xl mt-2">
-        <GridSkeleton count={3} />
-      </div>
-    </motion.div>
+      ))}
+    </>
   )
 }
 
@@ -202,6 +180,8 @@ export default function Discover() {
   const [category, setCategory]         = useState('all')
   const [radius, setRadius]             = useState(5)
   const [sortBy, setSortBy]             = useState('distance')
+  const [supabaseData, setSupabaseData] = useState([])
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const hasMounted = useRef(false)
 
   // On mount: if permission already granted, request GPS immediately; else show modal after brief delay.
@@ -209,6 +189,25 @@ export default function Discover() {
     if (hasMounted.current) return
     hasMounted.current = true
 
+    // 1. Fetch data from Supabase
+    const loadData = async () => {
+      try {
+        setIsDataLoading(true)
+        const data = await fetchARExperiences()
+        if (data) {
+          setSupabaseData(data)
+        }
+      } catch (err) {
+        toastError('Failed to load AR experiences from database.', 'Fetch Error')
+        console.error(err)
+      } finally {
+        setIsDataLoading(false)
+      }
+    }
+
+    loadData()
+
+    // 2. Geolocation logic
     let timeoutId
     let cancelled = false
 
@@ -245,7 +244,7 @@ export default function Discover() {
       cancelled = true
       if (timeoutId) window.clearTimeout(timeoutId)
     }
-  }, [requestLocation])
+  }, [requestLocation, toastError])
 
   // Toast feedback when location is granted
   useEffect(() => {
@@ -286,9 +285,11 @@ export default function Discover() {
 
   // ── Filtered + sorted results ─────────────────────────────────────────────
   const results = useMemo(() => {
+    const dataToFilter = supabaseData.length > 0 ? supabaseData : []
+
     let base = coords
-      ? filterByRadius(AR_EXPERIENCES, coords.lat, coords.lng, radius)
-      : AR_EXPERIENCES.map(exp => ({ ...exp, distance: undefined, distanceLabel: undefined }))
+      ? filterByRadius(dataToFilter, coords.lat, coords.lng, radius)
+      : dataToFilter.map(exp => ({ ...exp, distance: undefined, distanceLabel: undefined }))
 
     if (category !== 'all') {
       base = base.filter(exp => exp.category === category)
@@ -310,9 +311,9 @@ export default function Discover() {
     }
 
     return base
-  }, [coords, radius, category, search, sortBy])
+  }, [coords, radius, category, search, sortBy, supabaseData])
 
-  const showGPSLoader = loading && !coords
+  const showGPSLoader = (loading && !coords) || isDataLoading
 
   return (
     <main className="min-h-screen pt-[var(--nav-height)]">
@@ -459,7 +460,7 @@ export default function Discover() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full"
             >
               <GPSLoadingState />
             </motion.div>
@@ -470,7 +471,7 @@ export default function Discover() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full"
             >
               {results.length === 0 ? (
                 <EmptyState
@@ -496,7 +497,7 @@ export default function Discover() {
             animate={{ opacity: 1 }}
             className="text-center text-xs text-gray-600 pt-2 pb-4"
           >
-            Showing {results.length} of {AR_EXPERIENCES.length} AR experiences
+            Showing {results.length} of {supabaseData.length} AR experiences
             {coords && radius < 999 && ` within ${radius} km`}
             {coords && radius === 999 && ' — all distances'}
           </motion.p>

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useToast } from '../hooks/useToast'
 import { BrandMark } from '../components/ui/BrandLogo'
+import { submitContactForm } from '../services/supabase'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -139,12 +140,17 @@ export default function Contact() {
     }
 
     setSending(true)
-    // Simulate API delay (Supabase submitContactForm when ready)
-    await new Promise(r => setTimeout(r, 1400))
-    setSending(false)
-    setSent(true)
-    success('We\'ll get back to you within 24 hours.', 'Message sent!')
-    setForm({ name: '', email: '', message: '' })
+    try {
+      await submitContactForm(form)
+      setSent(true)
+      success('We\'ll get back to you within 24 hours.', 'Message sent!')
+      setForm({ name: '', email: '', message: '' })
+    } catch (err) {
+      toastError('Failed to send message. Please try again.', 'Error')
+      console.error(err)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
